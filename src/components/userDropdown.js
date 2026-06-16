@@ -38,7 +38,7 @@ function UserDropdown() {
         .then((userData) => {
             setUserData(userData);
         });
-    }, []);
+    }, [accountId]);
 
     const {first_name, email} = userData[0] || {};
 
@@ -52,16 +52,16 @@ function UserDropdown() {
 
 
     return (
-        <div id="userDropdown" className="transition duration-500 ease-in-out z-50 w-52 absolute translate-x-[40rem] translate-y-4 mt-14 pb-1 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
-            <div className="flex justify-start items-start pl-5 flex-col py-3 border-b">
-                <div className="text-xl">{first_name}</div>
-                <div className="text-xs">{email}</div>
+        <div id="userDropdown" className="pointer-events-none absolute right-0 top-12 z-50 w-64 translate-y-2 rounded-lg border border-[#e6e0d8] bg-white pb-1 opacity-0 shadow-xl transition duration-200 ease-out">
+            <div className="flex justify-start items-start px-5 flex-col py-4 border-b border-[#e6e0d8]">
+                <div className="text-lg font-black text-[#232323]">{first_name}</div>
+                <div className="text-xs font-semibold text-[#697586]">{email}</div>
             </div>
-            <div className="flex justify-start flex-col py-1 pl-5 items-start">
-                <Link to="/user/profile" className="transition-all block py-2 text-sm text-gray-700 hover:font-bold">Your Profile</Link>
-                <Link to="/orders" className="transition-all block py-2 text-sm text-gray-700 hover:font-bold">Orders</Link>
+            <div className="flex justify-start flex-col p-2 items-stretch">
+                <Link to="/user/profile" className="block rounded-md px-3 py-2 text-sm font-bold text-[#46515f] transition hover:bg-[#f3ebe1] hover:text-[#b85c6b]">Your Profile</Link>
+                <Link to="/orders" className="block rounded-md px-3 py-2 text-sm font-bold text-[#46515f] transition hover:bg-[#f3ebe1] hover:text-[#b85c6b]">Orders</Link>
                 {/* <Link to="/user/settings" className="block py-2 text-sm text-gray-700 hover:font-bold">Settings</Link> */}
-                <Link to="/" onClick={removeCookie} className="transition-all block py-2 text-sm text-gray-700 hover:font-bold">Sign out</Link>
+                <Link to="/" onClick={removeCookie} className="block rounded-md px-3 py-2 text-sm font-bold text-[#46515f] transition hover:bg-[#f3ebe1] hover:text-[#b85c6b]">Sign out</Link>
             </div>
         </div>
     );
@@ -69,13 +69,13 @@ function UserDropdown() {
 
 export function userDropdown() {
     var element = document.getElementById("userDropdown");
-    if (element.classList.contains("translate-x-[0]")) {
-        element.classList.remove("translate-x-[0]");
-        element.classList.add("translate-x-[40rem]");
+    if (element.classList.contains("opacity-100")) {
+        element.classList.remove("opacity-100", "translate-y-0", "pointer-events-auto");
+        element.classList.add("opacity-0", "translate-y-2", "pointer-events-none");
     }
     else {
-        element.classList.remove("translate-x-[40rem]");
-        element.classList.add("translate-x-[0]");
+        element.classList.remove("opacity-0", "translate-y-2", "pointer-events-none");
+        element.classList.add("opacity-100", "translate-y-0", "pointer-events-auto");
     }
 }
 

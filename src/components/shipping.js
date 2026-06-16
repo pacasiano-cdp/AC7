@@ -1,11 +1,13 @@
 import React, { useEffect, useState} from "react";
 import "../App.css";
 import Select from "react-select";
+import { AdminPageHeader, AdminSectionHeader, TableSkeleton } from "./adminUi";
 
 export default function Shipping() {
 
     const [shipped, setShipped] = useState([]);
     const [selectedShipped, setSelectedShipped] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetch('/api/shipment/shipped/items')  // Ensure the leading slash for an absolute path
@@ -13,7 +15,8 @@ export default function Shipping() {
             .then(shipped => {
                 setShipped(shipped);
             })
-            .catch(error => console.error('Error fetching shipped data:', error));
+            .catch(error => console.error('Error fetching shipped data:', error))
+            .finally(() => setLoading(false));
     }, []);
     console.log(shipped);
 
@@ -35,21 +38,14 @@ export default function Shipping() {
 
 
     return(
-        <div className="h-screen px-8 pt-8">
-            <div className="flex flex-col gap-5 ">
-                <div id="header" className="flex flex-row justify-between">
-                    <span className="text-xl font-bold">Shipment</span>
-                    <Select options={options} onChange={(selectedOption) => setSelectedShipped(selectedOption)} className="w-96" />
-                </div>
+        <div className="min-h-screen">
+            <div className="flex flex-col gap-6">
+                <AdminPageHeader title="Shipments" description="Track shipped orders, couriers, and delivery references.">
+                    <Select options={options} onChange={(selectedOption) => setSelectedShipped(selectedOption)} className="text-sm" placeholder="Filter shipments" />
+                </AdminPageHeader>
                 <div className="flex flex-col gap-3">
-                    <div className="flex flex-row justify-between bg-gray-200 w-full p-5">
-                        <div className="flex flex-row justify-between w-full">
-                            <div className="text-md font-bold">Delivery List</div>
-                        </div>
-                        <div className="flex flex-row gap-2">
-                            {/* <button><span className="text-md bg-gray-100 px-2 py-1 rounded-md font-bold">View All</span></button> */}
-                        </div>
-                    </div>
+                    <AdminSectionHeader title="Delivery List" count={filteredShipped.length} noun="shipment" />
+                    {loading ? <TableSkeleton columns={7} /> : (
                     <div className="max-h-[560px] overflow-auto">
                         <table className="w-full border-collapse border">
                             <thead>
@@ -82,6 +78,7 @@ export default function Shipping() {
                             </tbody>
                         </table>
                     </div>
+                    )}
                 </div>
             </div>   
         </div>

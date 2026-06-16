@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import "../App.css";
 import Select from "react-select";
 import { myContext } from "../context/adminContext";
+import { AdminPageHeader, AdminSectionHeader, TableSkeleton } from "./adminUi";
 
 
 export default function Returns() {
@@ -11,6 +12,7 @@ export default function Returns() {
     const [selectedReturn, setSelectedReturn] = useState(null);
     const [reloadData, setReloadData] = useState(false);
     const [options, setOptions] = useState([])
+    const [loading, setLoading] = useState(true);
     const [refundSucces, setRefundSucces] = useState(false);
     const [returnRefundSucces, setReturnRefundSucces] = useState(false);
     const [rejectSucces, setRejectSucces] = useState(false);
@@ -26,7 +28,8 @@ export default function Returns() {
                 // select only orders with status processing return
                 // const returnedOrders = orders.filter((order) => order.sale_status === "processing return")
                 setOrders(orders);
-            });
+            })
+            .finally(() => setLoading(false));
     }, [reloadData]);
 
     useEffect(() => {
@@ -60,22 +63,16 @@ export default function Returns() {
         <RefundInput isModalOpen={refund} sale_id={selectedSale} setIsModalOpen={setRefund} setRefundSucces={setRefundSucces}  setReloadData={setReloadData} reloadData={reloadData}/>
         <RefundReturn isModalOpen={refturn} selectedSale={selectedSale} setIsModalOpen={setRefturn} setReturnRefundSucces={setReturnRefundSucces} setReloadData={setReloadData} reloadData={reloadData} />
         <RejectRefund isModalOpen={reject} selectedSale={selectedSale} setIsModalOpen={setReject} setRejectSucces={setRefundSucces} setReloadData={setReloadData} reloadData={reloadData}/>
-        <div className="h-screen px-8 pt-8">
-            <div className="flex flex-col gap-5 ">
-                <div id="header" className="flex flex-row justify-between">
-                    <span className="text-xl font-bold">Orders</span>
-                    <Select options={options} onChange={(selectedOption) => setSelectedReturn(selectedOption)} className="w-96" />
-                </div>
+        <div className="min-h-screen">
+            <div className="flex flex-col gap-6">
+                <AdminPageHeader title="Return Requests" description="Review return evidence, customer comments, and refund actions.">
+                    <Select options={options} onChange={(selectedOption) => setSelectedReturn(selectedOption)} className="text-sm" placeholder="Filter return request" />
+                </AdminPageHeader>
                 <div className="flex flex-col gap-3">
-                    <div className="flex flex-row justify-between bg-gray-200 w-full p-5">
-                        <div className="flex flex-row justify-between w-full">
-                            <div className="text-md font-bold">Requested Returns</div>
-                            <button onClick={() => setPage("orders")}><span className=" text-md bg-gray-100 px-2 py-1 rounded-md font-bold">View All Orders</span></button>
-                        </div>
-                        <div className="flex flex-row gap-2">
-                            {/* <button><span className="text-md bg-gray-100 px-2 py-1 rounded-md font-bold">View All</span></button> */}
-                        </div>
-                    </div>
+                    <AdminSectionHeader title="Requested Returns" count={filteredOrders.length} noun="request">
+                        <button onClick={() => setPage("orders")} className="btn-secondary min-h-0 px-4 py-2 text-sm">View All Orders</button>
+                    </AdminSectionHeader>
+                    {loading ? <TableSkeleton columns={8} /> : (
                     <div className=" overflow-auto">
                         <table className="w-full border-collapse border">
                             <thead>
@@ -97,6 +94,7 @@ export default function Returns() {
                                 ))}
                         </table>
                     </div>
+                    )}
                 </div>
             </div>   
         </div>

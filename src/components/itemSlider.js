@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Item from "./item";
 import '../App.css';
+import { ProductCardSkeleton } from "./skeletons";
 
 function ItemSlider() {
     
@@ -37,7 +38,7 @@ function ItemSlider() {
         <>
         {batch.length !== 0 ? (
         <div className="itemSlider">
-          <div className="flex justify-start p-5 pl-4 lg:gap-3.5 md:gap-2.5 gap-7 align-middle overflow-scroll whitespace-nowrap scrollbar-hide">
+          <div className="flex justify-start gap-4 overflow-x-auto pb-4 pt-1 scrollbar-hide">
             {products.map((item) => (
                 <Item key={item.product_id} product_obj={item} />
             ))}
@@ -45,15 +46,11 @@ function ItemSlider() {
         </div>
         ) : (
         loading ? (
-        <div className="flex justify-center items-center py-20">
-            <div className="flex flex-col justify-center items-center">
-                <div className="animate-spin rounded-full border-t-4 border-black border-solid h-12 w-12"></div>
-            </div>
-        </div>
+        <ProductCardSkeleton />
         ):(
         <div className="flex justify-center items-center  py-20">
             <div className="flex flex-col justify-center items-center">
-                <div className="text-2xl font-bold">No Items Available</div>
+                <div className="surface px-6 py-5 text-lg font-bold text-[#697586]">No Items Available</div>
             </div>
         </div>
         ))}

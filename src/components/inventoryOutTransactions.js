@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import Select from "react-select";
 import { myContext } from "../context/adminContext";
+import { AdminPageHeader, AdminSectionHeader, TableSkeleton } from "./adminUi";
 
 export default function InventoryTransactions() {
   
@@ -8,6 +9,7 @@ export default function InventoryTransactions() {
   const [transactions, setTransactions] = useState([]);
   const [options, setOptions] = useState([]);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch('/api/inventory_out/out')  // Ensure the leading slash for an absolute path
@@ -15,7 +17,8 @@ export default function InventoryTransactions() {
         .then(transactions => {
             setTransactions(transactions);
         })
-        .catch(error => console.error('Error fetching inventory transactions data:', error));
+        .catch(error => console.error('Error fetching inventory transactions data:', error))
+        .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
@@ -43,20 +46,15 @@ export default function InventoryTransactions() {
 
 
   return (
-    <div className="px-8 py-8">
-      <div className="flex flex-col gap-5">
-        <div id="header" className="flex flex-row justify-between">
-          <span className="text-xl font-bold">Inventory Out Transactions</span>
-          <div className="flex flex-row gap-2">
-          <Select options={options} className="w-96" onChange={(selectedOption) => setSelectedTransaction(selectedOption)} />
-          <button
-            onClick={() => setPage("inventory")}
-            className="bg-gray-200 px-2 py-1 rounded-md font-medium"
-          >
-            Back
-          </button>
-          </div>
-        </div>
+    <div className="min-h-screen">
+      <div className="flex flex-col gap-6">
+        <AdminPageHeader title="Stock Out History" description="Review outbound inventory movement and remarks.">
+          <Select options={options} className="text-sm" placeholder="Filter transactions" onChange={(selectedOption) => setSelectedTransaction(selectedOption)} />
+        </AdminPageHeader>
+        <AdminSectionHeader title="Inventory Out Transactions" count={filteredtransactions.length} noun="transaction">
+          <button onClick={() => setPage("inventory")} className="btn-secondary min-h-0 px-4 py-2 text-sm">Back to Inventory</button>
+        </AdminSectionHeader>
+        {loading ? <TableSkeleton columns={5} /> : (
         <table className="w-full border-collapse border">
             <thead>
                 <tr className="bg-gray-400">
@@ -73,6 +71,7 @@ export default function InventoryTransactions() {
               ))}
             </tbody>
             </table>
+        )}
         </div>
     </div>
   );

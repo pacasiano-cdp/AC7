@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
-import Select from "react-select";
 import CreatableSelect from 'react-select/creatable';
 import { myContext } from "../context/adminContext";
+import { AdminPageHeader } from "./adminUi";
 
 export default function AddItem() {
   
@@ -29,17 +29,11 @@ export default function AddItem() {
     };
 
   return (
-    <div className="px-8 py-8">
-      <div className="flex flex-col gap-5">
-        <div id="header" className="flex flex-row justify-between">
-          <span className="text-xl font-bold">Add Item</span>
-          <button
-            onClick={() => setPage("inventory")}
-            className="bg-gray-200 px-2 py-1 rounded-md font-medium"
-          >
-            Back
-          </button>
-        </div>
+    <div className="min-h-screen">
+      <div className="flex flex-col gap-6">
+        <AdminPageHeader title="Add Item" description="Create a new product and assign its category and stock threshold.">
+          <button onClick={() => setPage("inventory")} className="btn-secondary min-h-0 px-4 py-2 text-sm">Back to Inventory</button>
+        </AdminPageHeader>
         <form action="/api/product" method="POST" className="flex flex-col gap-3">
             <table className="w-full border-collapse border">
                 <thead>

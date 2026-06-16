@@ -1,43 +1,39 @@
 import React from "react";
 import Search from "./searchbar";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 
 function MenuDropdown() {
-
-    return (
-
-        <div id="menuButton" className="fixed -translate-y-12 transition duration-500 ease-in-out md:hidden bg-gray-50 z-10 pl-3 p-0 w-full top-12 shadow-sm">
-            <div className="flex flex-row justify-between">
-                <div className="flex flex-row justify-start gap-3 w-1/2">
-                    <CustomLink to="/home" className="flex items-center m-0 font-bold" >Menu</CustomLink>
-                    <CustomLink to="/store" className="flex items-center m-0 font-bold">Store</CustomLink>
-                    <CustomLink to="/about" className="flex items-center m-0 font-bold">About</CustomLink>
-                </div>
-                <div className="flex justify-end items-center w-1/2">
-                    <Search/>
-                </div>
-            </div>
+  return (
+    <div id="menuButton" className="fixed top-16 z-40 w-full -translate-y-[120%] border-b border-[#e6e0d8] bg-[#fffdf9] px-3 py-3 shadow-lg transition duration-300 ease-in-out md:hidden">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-row justify-start gap-2">
+          <CustomLink to="/home">Home</CustomLink>
+          <CustomLink to="/store">Store</CustomLink>
+          <CustomLink to="/about">About</CustomLink>
         </div>
-
-    );
+        <Search />
+      </div>
+    </div>
+  );
 }
 
-function CustomLink({to, children, className}) {
-    return (
-        <Link to={to} className={className+" transition ease-out duration-500 hover:bg-gray-300 my-2 px-2 rounded-md"}>{children}</Link>
-    );
+function CustomLink({ to, children }) {
+  return (
+    <Link to={to} className="rounded-md px-3 py-2 text-sm font-black text-[#46515f] transition hover:bg-[#f3ebe1] hover:text-[#b85c6b]">
+      {children}
+    </Link>
+  );
 }
 
 export function menuDropdown() {
-
-    var element = document.getElementById("menuButton");
-    if (element.classList.contains("-translate-y-12")) {
-        element.classList.remove("-translate-y-12");
-    }
-    else
-    {
-        element.classList.add("-translate-y-12");
-    }
+  var element = document.getElementById("menuButton");
+  if (element.classList.contains("-translate-y-[120%]")) {
+    element.classList.remove("-translate-y-[120%]");
+    element.classList.add("translate-y-0");
+  } else {
+    element.classList.remove("translate-y-0");
+    element.classList.add("-translate-y-[120%]");
+  }
 }
 
 export default MenuDropdown;

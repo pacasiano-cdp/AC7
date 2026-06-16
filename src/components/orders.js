@@ -6,7 +6,8 @@ import Check from "../imgs/check.png";
 import { myContext } from '../context/adminContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCartShopping } from '@fortawesome/free-solid-svg-icons';
-import { parse, format, subDays, isValid, isToday, isWithinInterval, subWeeks } from 'date-fns';
+import { parse, isValid, isToday, isWithinInterval, subWeeks } from 'date-fns';
+import { AdminPageHeader, AdminSectionHeader, TableSkeleton } from "./adminUi";
 
 
 export default function Orders() {
@@ -20,6 +21,7 @@ export default function Orders() {
     const [returned, setReturned] = useState(false);
     const [packed, setPacked] = useState(false);
     const [options, setOptions] = useState([])
+    const [loading, setLoading] = useState(true);
     const [shippedSucces, setShippedSucces] = useState(false);
     const [selectedOrderToBeShipped, setSelectedOrderToBeShipped] = useState(null);
     const { setPage } = useContext(myContext); 
@@ -29,7 +31,8 @@ export default function Orders() {
             .then((res) => res.json())
             .then((orders) => {
                 setOrders(orders);
-            });
+            })
+            .finally(() => setLoading(false));
     }, [reloadData]);
 
     useEffect(() => {
@@ -61,29 +64,28 @@ export default function Orders() {
         <Shipped isModalOpen={shippedSucces} setModalOpen={setShippedSucces} />
         <Returned isModalOpen={returned} setModalOpen={setReturned} />
         <Packed isModalOpen={packed} setModalOpen={setPacked} />
-        <div className="h-screen px-8 pt-8">
-            <div className="flex flex-col gap-5 ">
-                <div id="header" className="flex flex-row justify-between">
-                    <span className="text-xl font-bold">Orders</span>
-                    <Select options={options} className="w-96" onChange={(selectedOption) => setSelectedOrder(selectedOption)} />
-                </div>
-                <div className="flex flex-row justify-start gap-5 w-full">
+        <div className="min-h-screen">
+            <div className="flex flex-col gap-6">
+                <AdminPageHeader title="Orders" description="Review order volume, revenue, fulfillment status, and return requests.">
+                    <Select
+                        options={options}
+                        className="text-sm"
+                        placeholder="Filter by order"
+                        onChange={(selectedOption) => setSelectedOrder(selectedOption)}
+                    />
+                </AdminPageHeader>
+                <div className="grid w-full gap-5 sm:grid-cols-2 xl:grid-cols-4">
                   <DailySales orders={orders} />
                   <DailyRevenue orders={orders} />
                   <WeeklySales orders={orders} />
                   <WeeklyRevenue orders={orders} />
                 </div>
                 <div className="flex flex-col gap-3">
-                    <div className="flex flex-row justify-between bg-gray-200 w-full p-5">
-                        <div>
-                            <span className="text-md font-bold">Order List</span>
-                        </div>
-                        <div className="flex flex-row gap-2">
-                            {/* <button><span className="text-md bg-gray-100 px-2 py-1 rounded-md font-bold">View All</span></button> */}
-                            <button onClick={() => setPage("returned")}><span className=" text-md bg-gray-100 px-2 py-1 rounded-md font-bold">Return Request</span></button>
-                        </div>
-                    </div>
-                    <div className="pb-10">
+                    <AdminSectionHeader title="Order List" count={filteredOrders.length} noun="order">
+                        <button onClick={() => setPage("returned")} className="btn-secondary min-h-0 px-4 py-2 text-sm">Return Requests</button>
+                    </AdminSectionHeader>
+                    {loading ? <TableSkeleton columns={7} /> : (
+                    <div className="overflow-auto pb-10">
                         <table className="w-full border-collapse table-auto border">
                             <thead>
                                 <tr className="bg-gray-400 border">
@@ -103,6 +105,7 @@ export default function Orders() {
                             ))}
                         </table>
                     </div>
+                    )}
                 </div>
             </div>   
         </div>
@@ -300,38 +303,50 @@ const Modal = ({ isOpen, children }) => {
     );
   };
 
-function DailySales({orders}) {
+const parseOrderDate = (saleDate) => {
+  if (!saleDate) return null;
 
-  const today = new Date().toLocaleDateString();
-  const dates = [];
+  const parsedDate = parse(saleDate, "MMMM dd, yyyy - hh:mm:ss a", new Date());
+  return isValid(parsedDate) ? parsedDate : null;
+};
 
-  for (let i = 0; i < orders.length; i++) {
-    dates.push(orders[i].sale_date);
-  }
+const getOrderRevenue = (order) => Number.parseFloat(order.price) || 0;
 
-  const convertSaleDates = (dates) => {
-    return dates.map((saleDate, index) => {
-      if (saleDate) {
-        const parsedDate = parse(saleDate, "MMMM dd, yyyy '-' hh:mm:ss a", new Date());
-        const formattedDate = format(parsedDate, 'M/d/Y');
-        return formattedDate;
-      } else {
-        console.warn(`Sale date at index ${index} is missing or undefined:`, saleDate);
-        return null; // or handle the case when saleDate is missing
-      }
+const getTodayOrders = (orders) => (
+  orders.filter((order) => {
+    const parsedDate = parseOrderDate(order.sale_date);
+    return parsedDate && isToday(parsedDate);
+  })
+);
+
+const getWeeklyOrders = (orders) => {
+  const now = new Date();
+
+  return orders.filter((order) => {
+    const parsedDate = parseOrderDate(order.sale_date);
+    return parsedDate && isWithinInterval(parsedDate, {
+      start: subWeeks(now, 1),
+      end: now,
     });
-  };
- 
-  const formattedDates = convertSaleDates(dates);
-  const filteredDates = formattedDates.filter(date => date === today);
-  console.log(filteredDates);
+  });
+};
+
+const formatCurrency = (value) => (
+  value.toLocaleString("en-PH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+);
+
+function DailySales({orders}) {
+  const dailySales = getTodayOrders(orders).length;
 
   return(
-  <div className="flex flex-col text-white w-72 gap-5 p-7 custom-gradient rounded-md">
+  <div className="metric-card flex min-h-36 w-full flex-col justify-between gap-5 rounded-lg p-6 text-[#232323]">
     
     <div className="flex flex-row justify-between">
-      <span className="text-xl font-bold">Daily Sales</span>
-      <div className="">
+        <span className="text-base font-black">Daily Sales</span>
+      <div className="text-[#768f78]">
         <FontAwesomeIcon icon={faCartShopping} size="2x" />
       </div>
     </div>
@@ -339,7 +354,7 @@ function DailySales({orders}) {
     <div className="flex flex-row justify-between items-center w-full" >
       
       <div>
-        <span className="text-2xl">{filteredDates.length}</span>
+        <span className="text-3xl font-black">{dailySales}</span>
       </div>
     </div>
 
@@ -348,40 +363,14 @@ function DailySales({orders}) {
 }
 
 function WeeklySales({orders}) {
-
-  const dates = [];
-
-  for (let i = 0; i < orders.length; i++) {
-    dates.push(orders[i].sale_date);
-  }
-
-  const convertSaleDates = (dates) => {
-    return dates.map((saleDate, index) => {
-      if (saleDate) {
-        const parsedDate = parse(saleDate, "MMMM dd, yyyy '-' hh:mm:ss a", new Date());
-        const formattedDate = format(parsedDate, 'M/d/Y');
-        
-        // Check if the date is within the last 7 days
-        const isWithin7Days = subDays(new Date(), 7) <= parsedDate && parsedDate <= new Date();
-  
-        // Append time if the date is within the last 7 days, otherwise, return only the date
-        return isWithin7Days ? `${formattedDate} - ${format(parsedDate, 'hh:mm:ss a')}` : formattedDate;
-      } else {
-        console.warn(`Sale date at index ${index} is missing or undefined:`, saleDate);
-        return null; // or handle the case when saleDate is missing
-      }
-    });
-  };
-  
-  const formattedDates = convertSaleDates(dates);
-  console.log(formattedDates);
+  const weeklySales = getWeeklyOrders(orders).length;
 
   return(
-  <div className="flex flex-col text-white w-72 gap-5 p-7 custom-gradient rounded-md">
+  <div className="metric-card flex min-h-36 w-full flex-col justify-between gap-5 rounded-lg p-6 text-[#232323]">
     
     <div className="flex flex-row justify-between">
-      <span className="text-xl font-bold">Weekly Sales</span>
-      <div className="">
+      <span className="text-base font-black">Weekly Sales</span>
+      <div className="text-[#768f78]">
         <FontAwesomeIcon icon={faCartShopping} size="2x" />
       </div>
     </div>
@@ -389,7 +378,7 @@ function WeeklySales({orders}) {
     <div className="flex flex-row justify-between items-center w-full" >
       
       <div>
-        <span className="text-2xl">{formattedDates.length}</span>
+        <span className="text-3xl font-black">{weeklySales}</span>
       </div>
     </div>
 
@@ -398,45 +387,21 @@ function WeeklySales({orders}) {
 }
 
 function DailyRevenue({orders}) {
- 
-  // select all dates that are today and get the total price
-  const convertSaleDates = (orders) => {
-  
-    const filteredSales = orders.filter((order) => {
-      const parsedDate = parse(order.sale_date, "MMMM dd, yyyy '-' hh:mm:ss a", new Date(), {
-        additionalDigits: 2,
-      });
-      return isValid(parsedDate) && isToday(parsedDate);
-    });
-  
-    const totalSalesPrice = filteredSales.reduce((total, order) => total + parseFloat(order.price), 0);
-  
-    return {
-      filteredSales,
-      totalSalesPrice,
-    };
-  };
-  
-  // Example usage
-  const { filteredSales, totalSalesPrice } = convertSaleDates(orders);
-  console.log('Filtered Sales:', filteredSales);
-  console.log('Total Sales Price:', totalSalesPrice);
+  const totalSalesPrice = getTodayOrders(orders).reduce((total, order) => total + getOrderRevenue(order), 0);
   
 
   return(
-  <div className="flex flex-col text-white w-72 gap-5 p-7 custom-gradient2 rounded-md">
+  <div className="metric-card metric-card-revenue flex min-h-36 w-full flex-col justify-between gap-5 rounded-lg p-6 text-[#232323]">
     
     <div className="flex flex-row justify-between">
-      <span className="text-xl font-bold">Daily Revenue</span>
-      <div className="text-3xl -mt-2 font-bold">
-        ₱
-      </div>
+      <span className="text-base font-black">Daily Revenue</span>
+      <div className="-mt-2 text-3xl font-black text-[#b85c6b]">&#8369;</div>
     </div>
 
     <div className="flex flex-row justify-between items-center w-full" >
       
       <div>
-        <span className="text-2xl">₱ {totalSalesPrice}</span>
+        <span className="text-3xl font-black">&#8369; {formatCurrency(totalSalesPrice)}</span>
       </div>
     </div>
 
@@ -445,61 +410,20 @@ function DailyRevenue({orders}) {
 }
 
 function WeeklyRevenue({orders}) {
-    
-  const calculateWeeklyRevenue = (orders) => {
-    const formattedDates = orders.map((order, index) => {
-      if (order.sale_date && order.price) {
-        const parsedDate = parse(order.sale_date, "MMMM dd, yyyy '-' hh:mm:ss a", new Date());
-        const formattedDate = format(parsedDate, 'MMMM dd, yyyy');
-        
-        // Check if the date is within the last 7 days
-        const isWithin7Days = isWithinInterval(parsedDate, {
-          start: subWeeks(new Date(), 1),
-          end: new Date(),
-        });
-  
-        // Calculate revenue only for orders within the last 7 days
-        if (isWithin7Days) {
-          return {
-            formattedDate: `${formattedDate} - ${format(parsedDate, 'hh:mm:ss a')}`,
-            revenue: parseFloat(order.price),
-          };
-        } else {
-          return null;
-        }
-      } else {
-        console.warn(`Order at index ${index} is missing sale_date or price:`, order);
-        return null; // or handle the case when sale_date or price is missing
-      }
-    }).filter(Boolean); // Remove null values
-  
-    const totalWeeklyRevenue = formattedDates.reduce((total, order) => {
-      return total + order.revenue;
-    }, 0);
-  
-    return {
-      formattedDates,
-      totalWeeklyRevenue,
-    };
-  };
-  
-  // Example usage
-  const { formattedDates, totalWeeklyRevenue } = calculateWeeklyRevenue(orders);
+  const totalWeeklyRevenue = getWeeklyOrders(orders).reduce((total, order) => total + getOrderRevenue(order), 0);
 
   return(
-  <div className="flex flex-col text-white w-72 gap-5 p-7 custom-gradient2 rounded-md">
+  <div className="metric-card metric-card-revenue flex min-h-36 w-full flex-col justify-between gap-5 rounded-lg p-6 text-[#232323]">
     
     <div className="flex flex-row justify-between">
-      <span className="text-xl font-bold">Weekly Revenue</span>
-      <div className="text-3xl -mt-2 font-bold">
-        ₱
-      </div>
+      <span className="text-base font-black">Weekly Revenue</span>
+      <div className="-mt-2 text-3xl font-black text-[#b85c6b]">&#8369;</div>
     </div>
 
     <div className="flex flex-row justify-between items-center w-full" >
       
       <div>
-        <span className="text-2xl">₱ {totalWeeklyRevenue}</span>
+        <span className="text-3xl font-black">&#8369; {formatCurrency(totalWeeklyRevenue)}</span>
       </div>
     </div>
 

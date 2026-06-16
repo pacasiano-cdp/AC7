@@ -1,76 +1,87 @@
-import React, {useState, useEffect}from "react";
-import '../App.css';
+import React, { useState, useEffect } from "react";
+import "../App.css";
 import ItemSlider from "../components/itemSlider";
 import CategorySlider from "../components/categorySlider";
+import { ProductCardSkeleton } from "../components/skeletons";
 
 function Store() {
+  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    const [categories, setCategories] = useState([])
-    useEffect(() => {
-        fetch('/api/product/categories/all')
-        .then(res => res.json())
-        .then(data => {
-            setCategories(data)
-        })
-    }, [])
+  useEffect(() => {
+    fetch("/api/product/categories/all")
+      .then((res) => res.json())
+      .then((data) => setCategories(data));
+  }, []);
 
-    console.log(categories)
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    fetch("/api/stock")
+      .then((res) => res.json())
+      .then((data) => setProducts(data));
+  }, []);
 
-    useEffect(() => {
-        setTimeout(() => {
-            setLoading(false);
-        }, 3000);
-    }, [loading]);
-    
-    useEffect(() => {
-        fetch('/api/stock')
-            .then(res => res.json())
-            .then(data => {
-                console.log(data)
-                setProducts(data)
-            })
-    }, []);
-
-    return (
-        <>
-        {products.length !== 0 ? (
-        <div className="transition-all ease-in main pt-16 min-h-screen">
-            <div className="flex flex-col py-16 lg:px-40 md:px-20">
-                <div className="flex justify-start text-xl font-bold px-5">Recently Added</div>
-                <ItemSlider /><br/>
-                {categories.map((category) => (
-                    <div key={category.category}>
-                        <div className="flex justify-start text-xl font-bold px-5">{category.category}</div>
-                        <CategorySlider category={category.category} /><br/>
-                    </div>
-                ))}
-            </div>
+  if (products.length === 0) {
+    return loading ? (
+      <main className="page-shell">
+        <section className="content-wrap py-10">
+          <div className="mb-8">
+            <div className="skeleton-line h-4 w-24 rounded-md" />
+            <div className="mt-3 skeleton-line h-9 w-80 max-w-full rounded-md" />
+            <div className="mt-3 skeleton-line h-5 w-[34rem] max-w-full rounded-md" />
+          </div>
+          <ProductCardSkeleton />
+        </section>
+      </main>
+    ) : (
+      <div className="page-shell flex items-center justify-center px-4">
+        <div className="surface max-w-lg p-8 text-center">
+          <div className="text-2xl font-black text-[#232323]">Store is currently empty</div>
+          <div className="mt-2 text-[#697586]">Please contact the administrator.</div>
         </div>
-        ) : (
-        loading ? (
-        <div className="flex justify-center items-center min-h-screen">
-            <div className="flex flex-col justify-center items-center">
-                <div className="animate-spin rounded-full border-t-4 border-black border-solid h-12 w-12"></div>
-            </div>
-        </div>
-
-        ):(
-        <div className="flex justify-center items-center min-h-screen">
-            <div className="flex flex-col justify-center items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 25 25" strokeWidth={0.7} stroke="currentColor" className="w-72 h-72">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.182 16.318A4.486 4.486 0 0012.016 15a4.486 4.486 0 00-3.198 1.318M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" />
-                </svg>
-                <div className="text-5xl font-bold">Store is currently empty</div>
-                <div className="text-xl font-semibold">Please contact the administrator</div>
-            </div>
-        </div>
-        )
-        )}
-        </>
+      </div>
     );
+  }
+
+  return (
+    <main className="page-shell">
+      <section className="content-wrap py-10">
+        <div className="mb-8">
+          <div className="eyebrow">Shop AC7</div>
+          <h1 className="section-title">Beauty products by collection</h1>
+          <p className="section-copy mt-2">
+            Browse available stock, compare categories, and add products to your cart without leaving the catalog.
+          </p>
+        </div>
+
+        <ProductSection title="Recently Added">
+          <ItemSlider />
+        </ProductSection>
+
+        {categories.map((category) => (
+          <ProductSection key={category.category} title={category.category}>
+            <CategorySlider category={category.category} />
+          </ProductSection>
+        ))}
+      </section>
+    </main>
+  );
+}
+
+function ProductSection({ title, children }) {
+  return (
+    <section className="mb-10">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-2xl font-black text-[#232323]">{title}</h2>
+      </div>
+      {children}
+    </section>
+  );
 }
 
 export default Store;

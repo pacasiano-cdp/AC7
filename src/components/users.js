@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import "../App.css";
 import Select from "react-select";
 import { myContext } from "../context/adminContext";
+import { AdminPageHeader, AdminSectionHeader, TableSkeleton } from "./adminUi";
 
 export default function Users() {
 
@@ -9,6 +10,8 @@ export default function Users() {
     const [selectedUser, setSelectedUser] = useState(null);
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const { setPage } = useContext(myContext);
+    const [loadingUsers, setLoadingUsers] = useState(true);
+    const [loadingEmployees, setLoadingEmployees] = useState(true);
 
     const [users, setUsers] = useState([]);
 
@@ -17,7 +20,8 @@ export default function Users() {
             .then((res) => res.json())
             .then((data) => {
                 setUsers(data);
-            });
+            })
+            .finally(() => setLoadingUsers(false));
     }, []);
 
     // Generate options based on products
@@ -43,7 +47,8 @@ export default function Users() {
             .then((res) => res.json())
             .then((data) => {
                 setEmployees(data);
-            });
+            })
+            .finally(() => setLoadingEmployees(false));
     }, []);
 
     const options2 = [
@@ -63,39 +68,26 @@ export default function Users() {
 
 
     return(
-        <div className="h-screen px-8 pt-8">
-            <div className="flex flex-col gap-5 ">
-                <div id="header" className="flex flex-row justify-between">
-                    <span className="text-xl font-bold">Accounts</span>
+        <div className="min-h-screen">
+            <div className="flex flex-col gap-6">
+                <AdminPageHeader title="Accounts" description="Browse customer and employee account records.">
                     {account === "customer" ?
-                    <Select options={options} className="w-96" onChange={(e) => setSelectedUser(e)} isSearchable={true} />
+                    <Select options={options} className="text-sm" placeholder="Filter customers" onChange={(e) => setSelectedUser(e)} isSearchable={true} />
                     :
-                    <Select options={options2} className="w-96" onChange={(e) => setSelectedEmployee(e)} isSearchable={true}/>
+                    <Select options={options2} className="text-sm" placeholder="Filter employees" onChange={(e) => setSelectedEmployee(e)} isSearchable={true}/>
                     }   
-                </div>
+                </AdminPageHeader>
                 <div className="flex flex-col gap-3">
-                    <div className="flex flex-row justify-between bg-gray-200 w-full p-5">
-                        <div>
+                    <AdminSectionHeader title={account==="customer" ? "User List" : "Employee List"} count={account==="customer" ? filteredUsers.length : filteredEmployees.length} noun="account">
                             {account==="customer" ? (
-                                <span className="text-md font-bold">User List</span>
-                                ) : (
-                                <span className="text-md font-bold">Employee List</span>
-                                )
-                            }
-                            
-                        </div>
-                        <div className="flex flex-row gap-2">
-                            {account==="customer" ? (
-                            <button onClick={()=> setAccount("employee")}><span className="text-md bg-gray-100 px-2 py-1 rounded-md font-bold">View Emp Accounts</span></button>
+                            <button onClick={()=> setAccount("employee")} className="btn-secondary min-h-0 px-4 py-2 text-sm">Employee Accounts</button>
                             ) : (<>
-                            <button onClick={()=> setAccount("customer")}><span className="text-md bg-gray-100 px-2 py-1 rounded-md font-bold">View User Accounts</span></button>  
-                            <button onClick={()=> setPage("addEmployee")}><span className=" text-md bg-gray-100 px-2 py-1 rounded-md font-bold">Add</span></button>
+                            <button onClick={()=> setAccount("customer")} className="btn-secondary min-h-0 px-4 py-2 text-sm">Customer Accounts</button>  
+                            <button onClick={()=> setPage("addEmployee")} className="btn-primary min-h-0 px-4 py-2 text-sm">Add Employee</button>
                             </>)}
-                    
-                            {/* <button><span className="text-md bg-gray-100 px-2 py-1 rounded-md font-bold">View All</span></button> */}
-                        </div>
-                    </div>
+                    </AdminSectionHeader>
                     {account==="customer" ? (
+                    loadingUsers ? <TableSkeleton columns={6} /> : (
                     <div className="max-h-[560px] overflow-auto">
                     <table className="w-full border-collapse border">
                         <thead>
@@ -129,7 +121,9 @@ export default function Users() {
                         </tbody>
                     </table>
                     </div>
+                    )
                     ) : (
+                    loadingEmployees ? <TableSkeleton columns={6} /> : (
                     <div className="max-h-[560px] overflow-auto">
                     <table className="w-full border-collapse border">
                         <thead>
@@ -160,6 +154,7 @@ export default function Users() {
                         </tbody>
                     </table>
                     </div>
+                    )
                     )}
                 </div>
             </div> 

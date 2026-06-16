@@ -3,6 +3,7 @@ import { myContext } from "../context/adminContext";
 import "../App.css";
 import Select from "react-select";
 import { IoWarning } from "react-icons/io5";
+import { AdminPageHeader, AdminSectionHeader, TableSkeleton } from "./adminUi";
 
 export default function Inventory() {
 
@@ -11,13 +12,15 @@ export default function Inventory() {
   const { setPage } = useContext(myContext);
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch('/api/product')
       .then((res) => res.json())
       .then((products) => {
         setProducts(products);
-      });
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   // Generate options based on products
@@ -37,42 +40,27 @@ export default function Inventory() {
     : products;
 
   return (
-    <div className="h-screen px-8 pt-8">
-      <div className="flex flex-col gap-5 ">
-        <div id="header" className="flex flex-row justify-between">
-          <span className="text-xl font-bold">Inventory</span>
+    <div className="min-h-screen">
+      <div className="flex flex-col gap-6">
+        <AdminPageHeader title="Inventory" description="Monitor product stock, thresholds, and batch movement.">
           <Select
             options={options}
-            className="w-96"
+            className="text-sm"
+            placeholder="Filter by product"
             onChange={(selectedOption) => setSelectedProduct(selectedOption)}
           />
-        </div>
+        </AdminPageHeader>
         <div className="flex flex-col gap-3">
-          <div className="flex flex-row justify-between bg-gray-200 w-full p-5">
-            <div>
-              <span className="text-md font-bold">Product List</span>
-            </div>
-            <div className="flex flex-row gap-2">
-              <button onClick={() => setPage("inventoryInTransactions")}>
-                <span className="text-md bg-gray-100 px-2 py-1 rounded-md font-bold">View Stock in Transactions</span>
-              </button>
-              <button onClick={() => setPage("inventoryOutTransactions")}>
-                <span className="text-md bg-gray-100 px-2 py-1 rounded-md font-bold">View Stock out Transactions</span>
-              </button>
-              <button onClick={() => setPage("inventoryIn")}>
-                <span className="text-md bg-gray-100 px-2 py-1 rounded-md font-bold">Stock-in</span>
-              </button>
-              <button onClick={() => setPage("inventoryOut")}>
-                <span className="text-md bg-gray-100 px-2 py-1 rounded-md font-bold">Stock-out</span>
-              </button>
-              <button onClick={() => setPage("addItem")}>
-                <span className="text-md bg-gray-100 px-2 py-1 rounded-md font-bold">Add Item</span>
-              </button>
-              {/* <button>
-                <span className="text-md bg-gray-100 px-2 py-1 rounded-md font-bold">View All</span>
-              </button> */}
-            </div>
-          </div>
+          <AdminSectionHeader title="Product List" count={filteredProducts.length} noun="product">
+            <button onClick={() => setPage("inventoryInTransactions")} className="btn-secondary min-h-0 px-4 py-2 text-sm">Stock In History</button>
+            <button onClick={() => setPage("inventoryOutTransactions")} className="btn-secondary min-h-0 px-4 py-2 text-sm">Stock Out History</button>
+            <button onClick={() => setPage("inventoryIn")} className="btn-secondary min-h-0 px-4 py-2 text-sm">Stock In</button>
+            <button onClick={() => setPage("inventoryOut")} className="btn-secondary min-h-0 px-4 py-2 text-sm">Stock Out</button>
+            <button onClick={() => setPage("addItem")} className="btn-primary min-h-0 px-4 py-2 text-sm">Add Item</button>
+          </AdminSectionHeader>
+          {loading ? (
+            <TableSkeleton columns={7} />
+          ) : (
           <div className="max-h-[560px] overflow-auto">
             <table className="w-full border-collapse border">
               <thead>
@@ -94,6 +82,7 @@ export default function Inventory() {
               </tbody>
             </table>
           </div>
+          )}
         </div>
       </div>
     </div>

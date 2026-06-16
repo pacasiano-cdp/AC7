@@ -1,70 +1,69 @@
-import React, {useState, useEffect} from 'react';
-import {Link} from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import "../App.css";
 
 function Item(props) {
-
-  const [price, setPrice] = useState(0)
+  const [price, setPrice] = useState(0);
 
   useEffect(() => {
     fetch(`/api/stock/${props.product_obj.product_id}`)
-      .then(res => res.json())
-      .then(data => setPrice(data.price))
-      .catch(err => console.log("Item with Quantity 0"));
-
-  }, [props.product_obj.product_id])
+      .then((res) => res.json())
+      .then((data) => setPrice(data.price))
+      .catch(() => console.log("Item with Quantity 0"));
+  }, [props.product_obj.product_id]);
 
   function submitForm(e) {
-    e.preventDefault()
+    e.preventDefault();
 
-    fetch('/api/item', {
-      method: 'POST',
+    fetch("/api/item", {
+      method: "POST",
       headers: {
-        'Content-type': 'application/json'
+        "Content-type": "application/json",
       },
       body: JSON.stringify({
         product_price: price,
-        product_id: props.product_obj.product_id
-      })
+        product_id: props.product_obj.product_id,
+      }),
     })
-    .then(res => res.json())
-    .then(data => {
-      console.log(data)
-      window.location.href = '/AC7/cart';
-    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        window.location.href = "/AC7/cart";
+      });
   }
 
-  const imgPath = require(`../imgs/product-${props.product_obj.product_id}.png`)
+  const imgPath = require(`../imgs/product-${props.product_obj.product_id}.png`);
 
   return (
     <>
-    {price !== 0 &&
-    <form onSubmit={submitForm}>
-      <div className="item shadow-md rounded-md">
-        <div className="flex flex-col justify-center items-center gap-3 w-auto">
-          <div className="w-11/12 h-52 pt-3">
-            <Link to={`/product/${props.product_obj.product_id}`}>
-              <img className="object-cover w-full h-full rounded-md" src={imgPath} alt="Item1" />
+      {price !== 0 && (
+        <form onSubmit={submitForm} className="shrink-0">
+          <article className="group flex w-72 flex-col overflow-hidden rounded-lg border border-[#e6e0d8] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+            <Link to={`/product/${props.product_obj.product_id}`} className="block h-56 overflow-hidden bg-[#f3ebe1]">
+              <img
+                className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                src={imgPath}
+                alt={props.product_obj.name}
+              />
             </Link>
-          </div>
-          <div className="flex flex-col px-2 justify-start gap-2 w-full">
-            <div className="flex flex-col pl-3 w-full">
-              <textarea className="flex justify-start text-start m-0 pb-2 text-xl font-extrabold focus:outline-none resize-none" name="product_name" value={props.product_obj.name} readOnly={true}/>
-              <input className="flex m-0 justify-start pb-2 text-sm font-semibold focus:outline-none" name="product_price" value={`₱${price}`} readOnly={true} />
-              <textarea className="flex m-0 justify-start text-xs focus:outline-none h-12 resize-none" value={props.product_obj.description} readOnly={true}/>
-              <input className="visibility: hidden" name="product_id" defaultValue={props.product_obj.product_id}/>
-              {/* props is the parameter name here. product_obj is the parameter name we set in itemSlider.js 
-              which contains the columns we queried from routes/products.js. 
-            Basically, 'props' contains a nested obj. We access the nested obj using 'product_obj'*/}
+            <div className="flex flex-1 flex-col p-4">
+              <div className="mb-2 inline-flex w-fit rounded-full bg-[#eef2e9] px-2.5 py-1 text-xs font-bold text-[#768f78]">
+                {props.product_obj.category}
+              </div>
+              <Link to={`/product/${props.product_obj.product_id}`} className="line-clamp-2 text-lg font-black leading-tight text-[#232323]">
+                {props.product_obj.name}
+              </Link>
+              <p className="mt-2 line-clamp-3 flex-1 text-sm leading-5 text-[#697586]">
+                {props.product_obj.description}
+              </p>
+              <div className="mt-4 flex items-center justify-between gap-3">
+                <div className="text-lg font-black text-[#b85c6b]">&#8369;{price}</div>
+                <button className="btn-primary min-h-0 px-4 py-2 text-sm">Add</button>
+              </div>
             </div>
-            <div className="flex justify-center py-2">
-              <button className="flex items-center transition-all hover:bg-black justify-center w-11/12 h-10 mb-2 text-md font-bold text-white bg-black/80 rounded-md">Add to Cart</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </form>
-    }
+          </article>
+        </form>
+      )}
     </>
   );
 }

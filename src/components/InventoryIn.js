@@ -3,6 +3,7 @@ import Select from "react-select"
 import "../App.css"
 import { myContext } from "../context/adminContext";
 import InventoryInConfirmation2 from "./inventoryInConfirmation2";
+import { AdminPageHeader } from "./adminUi";
 
 
 export default function InventoryIn() {
@@ -48,17 +49,11 @@ export default function InventoryIn() {
     return(
         <>
         <InventoryInConfirmation2 />
-        <div className=" px-8 py-8 ">
-            <div className="flex flex-col gap-5 ">
-                <div id="header" className="flex flex-row justify-between">
-                    <span className="text-xl font-bold">Inventory In</span>
-                    <button
-                        onClick={() => setPage("inventory")}
-                        className="bg-gray-200 px-2 py-1 rounded-md font-medium"
-                    >
-                        Back
-                    </button>
-                </div>
+        <div className="min-h-screen">
+            <div className="flex flex-col gap-6">
+                <AdminPageHeader title="Stock In" description="Create an inbound stock transaction and record delivered items.">
+                    <button onClick={() => setPage("inventory")} className="btn-secondary min-h-0 px-4 py-2 text-sm">Back to Inventory</button>
+                </AdminPageHeader>
                 <form action="/api/inventory_in" method="POST" className="flex flex-col gap-3">
                     <table className="w-full border-collapse border">
                         <thead>

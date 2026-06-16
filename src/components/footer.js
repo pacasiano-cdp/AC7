@@ -1,37 +1,31 @@
 import React from "react";
-import '../App.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPhone } from '@fortawesome/free-solid-svg-icons';
-import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
-import { faFacebook } from '@fortawesome/free-brands-svg-icons';
+import "../App.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPhone, faEnvelope } from "@fortawesome/free-solid-svg-icons";
+import { faFacebook } from "@fortawesome/free-brands-svg-icons";
 
 function Footer() {
-
-    return (
-  
-        <div className="footer">
-            <footer className="w-full bottom-0">
-                <div className="flex justify-between items-stretch bg-gray-100 h-36 text-md">
-                    <div className="flex justify-start gap-2 lg:pl-8 pl-2 font-bold ">
-                        <div className="flex items-center m-0 md:text-2xl text-md ">Find us at</div>
-                        <div className="flex items-center m-0 md:text-5xl text-4xl "><FontAwesomeIcon icon={faFacebook} style={{color: "#000000",}} /></div>
-                    </div>
-                    <div className="flex jusitfy-evenly md:gap-4 gap-0 md:pr-8 pr-2 font-bold">
-                        <div className="flex flex-col justify-center pr-7 gap-1 lg:text-xs text-xxs ">
-                            <div className="flex items-center m-0 md:text-xl text-sm">Contact</div>
-                            <div className="flex items-center m-0"><FontAwesomeIcon icon={faPhone} style={{color: "#000000",}} />&nbsp;09164770793</div>
-                            <div className="flex items-center m-0"><FontAwesomeIcon icon={faEnvelope} style={{color: "#000000",}} />&nbsp;Ac7copr95@gmail.com</div>
-                        </div>
-                        <div className="flex flex-col justify-center gap-1 lg:text-xs text-xxs ">
-                            <div className="flex items-center m-0 md:text-xl text-sm">FAQ</div>
-                            <div className="flex items-center m-0">Privacy&nbsp;Policy</div>
-                            <div className="flex items-center m-0">Terms&nbsp;of&nbsp;Service</div>
-                        </div>   
-                    </div>
-                </div>
-            </footer>
+  return (
+    <footer className="border-t border-[#e6e0d8] bg-[#232323] text-white">
+      <div className="content-wrap grid gap-8 py-10 md:grid-cols-[1fr_auto_auto] md:items-center">
+        <div>
+          <div className="text-xl font-black">AC7 Dazzle White</div>
+          <p className="mt-2 max-w-md text-sm leading-6 text-white/70">
+            Beauty essentials, daily skincare, and store support in one place.
+          </p>
         </div>
-      );
+        <div className="space-y-2 text-sm text-white/75">
+          <div className="font-bold text-white">Contact</div>
+          <div><FontAwesomeIcon icon={faPhone} /> 09164770793</div>
+          <div><FontAwesomeIcon icon={faEnvelope} /> Ac7copr95@gmail.com</div>
+        </div>
+        <div className="space-y-2 text-sm text-white/75">
+          <div className="font-bold text-white">Social</div>
+          <div className="text-2xl"><FontAwesomeIcon icon={faFacebook} /></div>
+        </div>
+      </div>
+    </footer>
+  );
 }
 
 export default Footer;

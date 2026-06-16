@@ -1,108 +1,93 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import Item1 from "../imgs/Item1.png";
 import "../App.css";
-import { useParams } from 'react-router-dom';
+import { useParams } from "react-router-dom";
+import { ProductDetailSkeleton } from "../components/skeletons";
 
 function Product() {
-
-  const {product_id} = useParams();
-  const [products, setProducts] = useState([]);
+  const { product_id } = useParams();
+  const [products, setProducts] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch(`/api/product/${product_id}`)
-    .then(res => res.json())
-    .then(data => setProducts(data))
-  }, [])
+      .then((res) => res.json())
+      .then((data) => setProducts(data))
+      .finally(() => setLoading(false));
+  }, [product_id]);
 
-  const {name: itemName , description, price, quantity: maxBatchQty} = products || {};
-
+  const { name: itemName, description, price, quantity: maxBatchQty } = products || {};
   const [quantity, setQuantity] = useState(1);
 
   const incrementQuantity = () => {
-    if (quantity < maxBatchQty) {
-      setQuantity(quantity + 1);
-    }
+    if (quantity < maxBatchQty) setQuantity(quantity + 1);
   };
 
   const decrementQuantity = () => {
-    if (quantity > 1) {
-      setQuantity(quantity - 1);
-    }
+    if (quantity > 1) setQuantity(quantity - 1);
   };
 
   function submitForm(e) {
     e.preventDefault();
-    fetch('/api/item', {
-      method: 'POST',
+    fetch("/api/item", {
+      method: "POST",
       headers: {
-        'Content-type': 'application/json'
+        "Content-type": "application/json",
       },
       body: JSON.stringify({
-        quantity: quantity,
-        product_id: product_id,
-        product_price: price
+        quantity,
+        product_id,
+        product_price: price,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Data message" + data.message);
+        window.location.href = "/AC7/cart";
       })
-    })
-    .then(res => res.json())
-    .then(data => {
-      console.log("Data message" + data.message)
-      window.location.href = '/AC7/cart';
-    })
-    .catch((err) => {
-      console.error("Error: ", err)
-    })
+      .catch((err) => {
+        console.error("Error: ", err);
+      });
   }
 
   return (
-    <div className="flex flex-col py-16 mt-0 justify-center min-h-screen transition-all ease-in">
-      <form onSubmit={submitForm}>
-      <section className="text-gray-700 body-font overflow-hidden bg-white">
-        <div className="flex flex-col md:flex-row lg:px-0 px-9 py-15 justify-center  border-red-600 overflow-clip">
-          <img
-            alt="ecommerce"
-            className="lg:w-3rem md:w-2rem w-1rem object-cover object-center rounded-xl aspect-auto  border-yellow-600"
-            src={Item1}
-          />
-          <div className="lg:w-1/2 w-full lg:pl-10 lg:py-6  border-blue-600">
-            <h1 className="text-gray-900 text-3xl title-font pb-3 font-medium mb-1">
+    <main className="page-shell">
+      <form onSubmit={submitForm} className="content-wrap py-10">
+        {loading ? (
+          <ProductDetailSkeleton />
+        ) : (
+        <section className="surface grid overflow-hidden md:grid-cols-[0.95fr_1.05fr]">
+          <div className="bg-[#f3ebe1] p-4 md:p-8">
+            <img
+              alt={itemName || "Product"}
+              className="h-full min-h-[24rem] w-full rounded-lg object-cover"
+              src={Item1}
+            />
+          </div>
+          <div className="flex flex-col justify-center p-6 md:p-10">
+            <div className="eyebrow">Product details</div>
+            <h1 className="mt-2 text-3xl font-black leading-tight text-[#232323] md:text-4xl">
               {itemName}
             </h1>
-            <p className="leading-relaxed">
-              {description}
-            </p>
-            <div className="flex items-center pb-5 border-b-2 border-gray-200 mb-5"></div>
-            <div className="flex flex-row justify-around">
-              <span className="title-font font-medium text-2xl text-gray-900">
-                ${price}
-              </span>
-              <span className="flex flex-row gap-5">
-                <button
-                  type='button'
-                  onClick={decrementQuantity}
-                  className="flex justify-center m-0 mt-1 p-1 w-1/3 align-middle text-xl hover:font-extrabold"
-                >
-                  -
-                </button>
-                <div className="inline-block align-middle p-1 w-1/3 text-2xl font-semibold">
-                  {quantity}
-                </div>
-                <button
-                  type='button'
-                  onClick={incrementQuantity}
-                  className="flex justify-center m-0 mt-1 p-1 w-1/3 align-middle text-xl hover:font-extrabold"
-                >
-                  +
-                </button>
-              </span>
-              <button type="submit" className="flex justify-center items-center text-white bg-black border-0 px-6 focus:outline-none hover:scale-105 rounded">
-                Add to Cart
-              </button>
+            <p className="section-copy mt-4">{description}</p>
+            <div className="my-8 h-px bg-[#e6e0d8]" />
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="text-sm font-bold text-[#697586]">Price</div>
+                <div className="text-3xl font-black text-[#b85c6b]">&#8369;{price}</div>
+              </div>
+              <div className="flex items-center gap-3 rounded-lg border border-[#e6e0d8] bg-white p-1">
+                <button type="button" onClick={decrementQuantity} className="h-10 w-10 rounded-md bg-[#f7f3ec] text-xl font-black">-</button>
+                <div className="w-10 text-center text-xl font-black">{quantity}</div>
+                <button type="button" onClick={incrementQuantity} className="h-10 w-10 rounded-md bg-[#f7f3ec] text-xl font-black">+</button>
+              </div>
+              <button type="submit" className="btn-primary px-8">Add to Cart</button>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+        )}
       </form>
-    </div>
+    </main>
   );
 }
 

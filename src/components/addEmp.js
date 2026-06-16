@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { myContext } from "../context/adminContext";
 import { passwordStrength } from 'check-password-strength'
+import { AdminPageHeader } from "./adminUi";
 
 export default function AddEmployee() {
     
@@ -144,17 +145,11 @@ export default function AddEmployee() {
 
 
     return (
-        <div className="px-8 py-8">
-        <div className="flex flex-col gap-5">
-            <div id="header" className="flex flex-row justify-between">
-            <span className="text-xl font-bold">Add Employee Account</span>
-            <button
-                onClick={() => setPage("users")}
-                className="bg-gray-200 px-2 py-1 rounded-md font-medium"
-            >
-                Back
-            </button>
-            </div>
+        <div className="min-h-screen">
+        <div className="flex flex-col gap-6">
+            <AdminPageHeader title="Add Employee Account" description="Create login credentials and staff profile details.">
+                <button onClick={() => setPage("users")} className="btn-secondary min-h-0 px-4 py-2 text-sm">Back to Accounts</button>
+            </AdminPageHeader>
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
 
                 {/* ACC INFO */}

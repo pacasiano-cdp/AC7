@@ -1,56 +1,37 @@
 import React, { useState, useEffect } from "react";
 import "../App.css";
 import navlogo from "../imgs/navlogo.png";
+import bodypic from "../imgs/bodypic.png";
 import { Link } from "react-router-dom";
 
 function Landing() {
-
   const usernameCookie = document.cookie.split("; ").find((row) => row.startsWith("username="))?.split("=")[1];
-  console.log(usernameCookie);
-
   const [isCustomerRegistered, SetIsCustomerRegistered] = useState(true);
 
   useEffect(() => {
-      if (usernameCookie) {
-          fetch(`/api/customer/username/${usernameCookie}`)
-              .then((res) => {
-                  if (!res.ok) {
-                      throw new Error(`HTTP error! Status: ${res.status}`);
-                  }
-                  return res.json();
-              })
-              .then((response) => {
-                  console.log('Fetched response:', response);
-                  if (response === "wala") {
-                    SetIsCustomerRegistered(false);
-                  }else{
-                    SetIsCustomerRegistered(true);
-                  }
-              })
-              .catch((error) => {
-                  console.error('Fetch error:', error);
-                  // Handle the error here
-              });
-      } else {
-          console.log('Username is undefined');
-          // Handle the case where username is undefined
-      }
+    if (usernameCookie) {
+      fetch(`/api/customer/username/${usernameCookie}`)
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+          return res.json();
+        })
+        .then((response) => {
+          SetIsCustomerRegistered(response !== "wala");
+        })
+        .catch((error) => {
+          console.error("Fetch error:", error);
+        });
+    }
   }, [usernameCookie]);
 
-  if(!isCustomerRegistered) {
+  if (!isCustomerRegistered) {
     window.location.href = "/AC7/sign-up/account-information";
   }
 
-  // should be true when password or username is incorrect
   const [incorrectUsername, setIncorrectUsername] = useState(false);
   const [invalidPassword, setInvalidPassword] = useState(false);
+  const [userInfo, setUserInfo] = useState({ username: "", password: "" });
 
-  const [userInfo, setUserInfo] = useState({
-    username: "",
-    password: "",
-  });
-
-  // handles userinfo changes
   function handleChange(event) {
     setUserInfo({
       ...userInfo,
@@ -61,124 +42,101 @@ function Landing() {
   function submitForm(e) {
     e.preventDefault();
 
-    fetch('/api/login', {
-        method: 'POST',
-        headers: {
-            'Content-type': 'application/json',
-        },
-        body: JSON.stringify({
-            username: userInfo.username,
-            password: userInfo.password,
-        }),
+    fetch("/api/login", {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify({
+        username: userInfo.username,
+        password: userInfo.password,
+      }),
     })
-        .then((response) => response.json())
-        .then((data) => {
-            if (data.message === "Correct") {
-                // Handle correct credentials
-                window.location.href = "/AC7/";
-                console.log("Login successful");
-            } else if (data.message === "Incorrect") {
-                // Handle incorrect credentials
-                console.log("Incorrect credentials");
-                setInvalidPassword(true);
-                setTimeout(() => {
-                  setInvalidPassword(false);
-                }, 3000);
-            } else if (data.message === "User not found") {
-                // Handle user not found
-                console.log("User not found");
-                setIncorrectUsername(true);
-                setTimeout(() => {
-                  setIncorrectUsername(false);
-                }, 3000);
-            } else {
-                // Handle other cases
-                console.log("Unknown error");
-            }
-        })
-        .catch((error) => {
-            console.error('Error during fetch:', error);
-        });
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.message === "Correct") {
+          window.location.href = "/AC7/";
+        } else if (data.message === "Incorrect") {
+          setInvalidPassword(true);
+          setTimeout(() => setInvalidPassword(false), 3000);
+        } else if (data.message === "User not found") {
+          setIncorrectUsername(true);
+          setTimeout(() => setIncorrectUsername(false), 3000);
+        }
+      })
+      .catch((error) => {
+        console.error("Error during fetch:", error);
+      });
   }
 
-  const [value, setValue] = useState({
-    username: false,
-    password: false,
-  });
-
-  useEffect(() => {
-    const validateField = (field, value) => {
-      setValue((prevValue) => ({
-        ...prevValue,
-        [field]: !!value, // Set to true if value exists, false otherwise
-      }));
-    };
-
-    validateField("username", userInfo.username);
-    validateField("password", userInfo.password);
-  }, [userInfo]);
-
   return (
-    <>
-    <section className="transition-all ease-in bg-gray-50 w-full h-full">
-      <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-        <a href="/AC7/"
-          className="flex items-center mb-3 mr-4 text-2xl font-semibold text-gray-900 "
-        >
-          <img
-            className="object-cover w-24 h-14"
-            src={navlogo}
-            alt="logo"
-          />
-          AC7 Dazzle White
-        </a>
-        <div className="w-full bg-white rounded-lg shadow  md:mt-0 sm:max-w-md xl:p-0 ">
-          <div className="p-6 space-y-6 sm:p-8">
-            <h1 className="flex justify-center text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl ">
-              Login to Account
-            </h1>
-            <form className="space-y-6" onSubmit={submitForm}>
-              <div className={``}>
-                <label for="username" className="block mb-2 text-sm font-medium text-gray-900">Your username</label>
-                <input
-                  type="text"
-                  onChange={handleChange}
-                  id="username"
-                  className={`bg-gray-50 border ${(incorrectUsername && !value.name) ? 'border-red-500' : 'border-gray-900'} sm:text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5`}
-                  placeholder="Enter username"
-                />
-                {incorrectUsername && <span className="fixed text-red-500 text-xs">Invalid Username!</span>}
-              </div>
-              <div className="">
-                <label for="password" className="block mb-2 text-sm font-medium text-gray-900">Password</label>
-                <input type="password" onChange={handleChange} id="password" placeholder="••••••••"
-                  className={`bg-gray-50 border ${((invalidPassword||incorrectUsername) && value.password) ? 'border-red-500' : 'border-gray-900'} sm:text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5`}
-                />
-                {invalidPassword && <span className="fixed text-red-500 text-xs">Invalid Password!</span>}
-              </div>
-              <button type="submit"
-                className={` ${incorrectUsername||invalidPassword === true ? "animate-wiggle " : ""} w-full text-gray-700 bg-gray-200 hover:bg-gray-300 hover:text-gray-50 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center`}
-              >
-                Login to account
-              </button>
-              <p className="flex justify-center text-sm font-light text-gray-500">
-                Don't have an account? &nbsp;
-                <Link
-                  to="/sign-up"
-                  className="font-medium text-blue-400 hover:underline"
-                >
-                  Sign-up here
-                </Link>
-              </p>
-            </form>
+    <main className="min-h-screen bg-[#f7f3ec]">
+      <section className="grid min-h-screen lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="relative hidden overflow-hidden lg:block">
+          <img src={bodypic} alt="AC7 storefront" className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#232323]/70 to-transparent" />
+          <div className="absolute bottom-10 left-10 max-w-lg text-white">
+            <div className="text-sm font-black uppercase tracking-widest text-white/75">AC7 Dazzle White</div>
+            <div className="mt-3 text-5xl font-black leading-tight">Beauty retail, inventory, and orders in one app.</div>
           </div>
         </div>
-      </div>
-    </section>
-    </>
+
+        <div className="flex items-center justify-center px-5 py-10">
+          <div className="w-full max-w-md">
+            <Link to="/AC7/" className="mb-6 flex items-center gap-3">
+              <img className="h-12 w-12 rounded-md object-cover" src={navlogo} alt="AC7 logo" />
+              <div>
+                <div className="text-xl font-black text-[#232323]">AC7 Dazzle White</div>
+                <div className="text-sm font-semibold text-[#697586]">Sign in to continue</div>
+              </div>
+            </Link>
+
+            <div className="surface p-6 sm:p-8">
+              <div className="mb-6">
+                <h1 className="text-2xl font-black text-[#232323]">Login</h1>
+                <p className="mt-1 text-sm text-[#697586]">Use your customer or employee account.</p>
+              </div>
+
+              <form className="space-y-5" onSubmit={submitForm}>
+                <div>
+                  <label htmlFor="username" className="mb-2 block text-sm font-bold text-[#232323]">Username</label>
+                  <input
+                    type="text"
+                    onChange={handleChange}
+                    id="username"
+                    className={`block w-full rounded-md p-3 text-sm ${incorrectUsername ? "border-red-500" : ""}`}
+                    placeholder="Enter username"
+                  />
+                  {incorrectUsername && <span className="mt-1 block text-xs font-semibold text-red-500">Invalid username</span>}
+                </div>
+
+                <div>
+                  <label htmlFor="password" className="mb-2 block text-sm font-bold text-[#232323]">Password</label>
+                  <input
+                    type="password"
+                    onChange={handleChange}
+                    id="password"
+                    placeholder="Enter password"
+                    className={`block w-full rounded-md p-3 text-sm ${invalidPassword ? "border-red-500" : ""}`}
+                  />
+                  {invalidPassword && <span className="mt-1 block text-xs font-semibold text-red-500">Invalid password</span>}
+                </div>
+
+                <button type="submit" className={`${incorrectUsername || invalidPassword ? "animate-wiggle" : ""} btn-primary w-full`}>
+                  Login
+                </button>
+
+                <p className="text-center text-sm text-[#697586]">
+                  Don't have an account?{" "}
+                  <Link to="/sign-up" className="font-black text-[#b85c6b]">Sign up</Link>
+                </p>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }
 
 export default Landing;
-
-

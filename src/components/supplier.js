@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import "../App.css";
 import Select from "react-select";
 import { myContext } from "../context/adminContext";
+import { AdminPageHeader, AdminSectionHeader, TableSkeleton } from "./adminUi";
 
 
 export default function Shipping() {
@@ -9,6 +10,7 @@ export default function Shipping() {
     const { setPage } = useContext(myContext);
     const [suppliers, setSuppliers] = useState([]);
     const [selectedSupplier, setSelectedSupplier] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     const options = [
     { value: 'All', label: 'All' },
@@ -30,26 +32,21 @@ export default function Shipping() {
             .then((res) => res.json())
             .then((data) => {
                 setSuppliers(data);
-            });
+            })
+            .finally(() => setLoading(false));
     }, []);
 
     return(
-        <div className="h-screen px-8 pt-8">
-            <div className="flex flex-col gap-5 ">
-                <div id="header" className="flex flex-row justify-between">
-                    <span className="text-xl font-bold">Suppliers</span>
-                    <Select options={options} onChange={(selectedOption) => setSelectedSupplier(selectedOption)} className="w-96" />
-                </div>
+        <div className="min-h-screen">
+            <div className="flex flex-col gap-6">
+                <AdminPageHeader title="Suppliers" description="Manage supplier contacts used for inventory movement.">
+                    <Select options={options} onChange={(selectedOption) => setSelectedSupplier(selectedOption)} className="text-sm" placeholder="Filter suppliers" />
+                </AdminPageHeader>
                 <div className="flex flex-col gap-3">
-                    <div className="flex flex-row justify-between bg-gray-200 w-full p-5">
-                        <div className="flex flex-row justify-between w-full">
-                            <div className="text-md font-bold">Supplier List</div>
-                            <button onClick={() => setPage("addSupplier")}><span className=" text-md bg-gray-100 px-2 py-1 rounded-md font-bold">Add Supplier</span></button>
-                        </div>
-                        <div className="flex flex-row gap-2">
-                            {/* <button><span className="text-md bg-gray-100 px-2 py-1 rounded-md font-bold">View All</span></button> */}
-                        </div>
-                    </div>
+                    <AdminSectionHeader title="Supplier List" count={filteredSuppliers.length} noun="supplier">
+                        <button onClick={() => setPage("addSupplier")} className="btn-primary min-h-0 px-4 py-2 text-sm">Add Supplier</button>
+                    </AdminSectionHeader>
+                    {loading ? <TableSkeleton columns={5} /> : (
                     <div className="max-h-[560px] overflow-auto">
                         <table className="w-full border-collapse border">
                             <thead>
@@ -70,6 +67,7 @@ export default function Shipping() {
                             </tbody>
                         </table>
                     </div>
+                    )}
                 </div>
             </div>   
         </div>

@@ -2,6 +2,7 @@ import React, {useContext, useState, useEffect} from "react";
 import "../App.css";
 import { myContext } from "../context/adminContext";
 import Check from "../imgs/check.png";
+import { AdminPageHeader } from "./adminUi";
 
 export default function SupplierAdd() {
 
@@ -99,12 +100,11 @@ export default function SupplierAdd() {
         <>
         <Success isModalOpen={success} setPage={setPage}/>
         <Failed isModalOpen={invalidInput}/>
-        <div className="px-8 py-8">
-        <div className="flex flex-col gap-5">
-            <div id="header" className="flex flex-row justify-between">
-            <span className="text-xl font-bold">Add Supplier</span>
-            <button onClick={() => setPage("viewSuppliers")} className="bg-gray-200 px-2 py-1 rounded-md font-medium">Back</button>
-            </div>
+        <div className="min-h-screen">
+        <div className="flex flex-col gap-6">
+            <AdminPageHeader title="Add Supplier" description="Create supplier contact information and address details.">
+                <button onClick={() => setPage("viewSuppliers")} className="btn-secondary min-h-0 px-4 py-2 text-sm">Back to Suppliers</button>
+            </AdminPageHeader>
             <form onSubmit={submitForm} className="flex flex-col gap-3">
 
                 {/* SUPPLIER INFO */}

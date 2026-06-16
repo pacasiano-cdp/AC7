@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import Select from "react-select";
 import "../App.css";
 import { myContext } from "../context/adminContext";
+import { AdminPageHeader } from "./adminUi";
 
 export default function InventoryOut() {
 
@@ -71,17 +72,11 @@ export default function InventoryOut() {
   }    
 
   return (
-    <div className=" px-8 py-8 ">
-      <div className="flex flex-col gap-5 ">
-        <div id="header" className="flex flex-row justify-between">
-          <span className="text-xl font-bold">Inventory Out</span>
-          <button
-            onClick={() => setPage("inventory")}
-            className="bg-gray-200 px-2 py-1 rounded-md font-medium"
-          >
-            Back
-          </button>
-        </div>
+    <div className="min-h-screen">
+      <div className="flex flex-col gap-6">
+        <AdminPageHeader title="Stock Out" description="Create an outbound stock transaction and attach item remarks.">
+          <button onClick={() => setPage("inventory")} className="btn-secondary min-h-0 px-4 py-2 text-sm">Back to Inventory</button>
+        </AdminPageHeader>
         <form action="/api/inventory_out" method="POST" className="flex flex-col gap-3">
           <input value={accountId} name="account_id" className="hidden"></input>
           <table className="w-full border-collapse border">
