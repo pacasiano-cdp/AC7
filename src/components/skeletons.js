@@ -4,7 +4,7 @@ export function ProductCardSkeleton({ count = 4 }) {
   return (
     <div className="flex gap-4 overflow-hidden pb-4 pt-1">
       {Array.from({ length: count }).map((_, index) => (
-        <div key={index} className="h-[27rem] w-72 shrink-0 rounded-lg border border-[#e6e0d8] bg-white p-4 shadow-sm">
+        <div key={index} className="h-[29rem] w-72 shrink-0 rounded-lg border border-[#e6e0d8] bg-white p-4 shadow-sm">
           <div className="skeleton-line h-52 rounded-lg" />
           <div className="mt-4 skeleton-line h-6 w-24 rounded-md" />
           <div className="mt-3 skeleton-line h-6 w-4/5 rounded-md" />
